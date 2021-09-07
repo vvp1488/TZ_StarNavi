@@ -17,7 +17,7 @@ class LikedMixin:
 
     @action(methods=['POST'], detail=True)
     def like(self,request, pk=None):
-        # Лайкаем obj
+        ''' Лайкаем obj'''
         obj = self.get_object()
 
         post = Post.objects.filter(id=self.kwargs['pk']).first()
@@ -28,11 +28,12 @@ class LikedMixin:
             services.add_like(obj, request.user)
             my_response_data = {**serializer.data, 'result': f'Пользователь {request.user} поставил лайк'}
         serializer._data = my_response_data
+        print(request.user)
         return Response(serializer.data)
 
     @action(methods=['POST'], detail=True)
     def unlike(self, request, pk=None):
-        # Удаляем лайк с obj
+        '''Удаляем лайк с obj'''
         obj = self.get_object()
         post = Post.objects.filter(id=self.kwargs['pk']).first()
         serializer = LikeSerializer(post)
@@ -46,7 +47,7 @@ class LikedMixin:
 
     @action(methods=['GET'], detail=True)
     def fans(self, request, pk=None):
-        # Получаем всех пользователей которые лайкнули obj
+        '''Получаем всех пользователей которые лайкнули obj'''
         obj = self.get_object()
         fans = services.get_fans(obj)
         serializer = FanSerializer(fans, many=True)

@@ -1,9 +1,12 @@
+from time import timezone
+
 from rest_framework import viewsets, permissions, status, generics, views
 from rest_framework.response import Response
+
 from .permissions import IsThisUserOrAdminOrReadOnly, IsOwnerOrAdminOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 
-from ..models import Post, Like
+from ..models import Post, Like, UserActivity
 from .serializers import (
     PostSerializer,
     UserSerializer,
@@ -11,16 +14,24 @@ from .serializers import (
     UserCreateSerializer,
     PostCreateSerializer,
     LikeListSerializer,
+    MyTokenObtainPairSerializer,
 )
 from .mixins import LikedMixin
 from django.contrib.auth.models import User
 from ..services import LikesFilter
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 
 class PostViewSet(LikedMixin, viewsets.ModelViewSet):
 
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, ]
 
     def create(self, request, *args, **kwargs):
         serializer = PostCreateSerializer(data=request.data)
@@ -29,7 +40,6 @@ class PostViewSet(LikedMixin, viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         my_response_data = {**serializer.data, 'result': f'Пост создан'}
         serializer._data = my_response_data
-
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
@@ -57,6 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         my_response_data = {**serializer.data, 'result': f'Пользователь создан'}
         serializer._data = my_response_data
+
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def retrieve(self, request, *args, **kwargs):

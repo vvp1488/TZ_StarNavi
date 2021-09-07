@@ -1,14 +1,12 @@
-from collections import OrderedDict
+from django.utils import timezone
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from ..models import Post, Like
+from ..models import Post, Like, UserActivity
 from .. import services as likes_services
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from generic_relations.relations import GenericRelatedField
 User = get_user_model()
-
-
 
 
 class FanSerializer(serializers.ModelSerializer):
@@ -37,7 +35,7 @@ class PostSerializer(serializers.ModelSerializer):
         )
 
     def get_is_fan(self, obj):
-        # Проверяем, лайкнул ли request.user пост obj
+        ''' Проверяем, лайкнул ли request.user пост obj '''
         user = self.context.get('request').user
         return likes_services.is_fan(obj, user)
 
@@ -82,12 +80,6 @@ class PostsCurrentUserSerializer(serializers.ModelSerializer):
             'body',
             'total_likes'
         )
-    #
-    # def to_representation(self, instance):
-    #     data = super(serializers.ModelSerializer, self).to_representation(instance)
-    #     result = OrderedDict()
-    #     result['data'] = data
-    #     return result
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -142,6 +134,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
             'body',
         )
 
+
 class PostSerializerForLike(serializers.ModelSerializer):
 
     class Meta:
@@ -150,6 +143,7 @@ class PostSerializerForLike(serializers.ModelSerializer):
             'id',
             'title',
         )
+
 
 class LikeListSerializer(serializers.ModelSerializer):
 
@@ -168,11 +162,16 @@ class LikeListSerializer(serializers.ModelSerializer):
             'content_object'
 
         )
-    # user = models.ForeignKey(User, related_name='likes', on_delete=models.CASCADE)
-    # created_ad = models.DateTimeField(auto_now=True, blank=True)
-    # content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    # object_id = models.PositiveIntegerField()
-    # content_object = GenericForeignKey()
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        UserActivity.objects.filter(user=user).update(user_last_login=timezone.now())
+
+        return token
 
 
 

@@ -25,7 +25,6 @@ urlpatterns = [
     url(r'^api/v1/', include(apipatterns)),
     url(r'admin/', admin.site.urls),
 
-    url(r'^auth/', include('djoser.urls.jwt'))
 
 ]
 
