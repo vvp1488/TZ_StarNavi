@@ -1,5 +1,5 @@
-from django.utils import timezone
-
+# from django.utils import timezone
+from datetime import datetime
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from ..models import Post, Like, UserActivity
@@ -153,6 +153,7 @@ class LikeListSerializer(serializers.ModelSerializer):
         Post: PostSerializerForLike()
     })
 
+
     class Meta:
         model = Like
         fields = (
@@ -169,9 +170,21 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        UserActivity.objects.filter(user=user).update(user_last_login=timezone.now())
+        UserActivity.objects.filter(user=user).update(user_last_login=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         return token
+
+
+class UserActivitySerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = UserActivity
+        fields = (
+            'user',
+            'user_last_login',
+            'user_last_request'
+        )
 
 
 

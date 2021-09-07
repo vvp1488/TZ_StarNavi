@@ -1,4 +1,5 @@
 from time import timezone
+from collections import OrderedDict
 
 from rest_framework import viewsets, permissions, status, generics, views
 from rest_framework.response import Response
@@ -15,6 +16,7 @@ from .serializers import (
     PostCreateSerializer,
     LikeListSerializer,
     MyTokenObtainPairSerializer,
+    UserActivitySerializer
 )
 from .mixins import LikedMixin
 from django.contrib.auth.models import User
@@ -91,10 +93,30 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class LikeListAPI(generics.ListAPIView):
+
     queryset = Like.objects.all()
     serializer_class = LikeListSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = LikesFilter
 
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = LikeListSerializer(queryset, many=True)
+
+        return Response(OrderedDict(
+            [
+                ('total_likes', queryset.count()),
+                ('results', serializer.data)
+            ]
+        ))
+        return Response(OrderedDict(
+            [
+                ("total_posts", posts.count()),
+                ("results", serializer.data)
+            ]
+        ))
 
 
+class UserActivityList(generics.ListAPIView):
+    queryset = UserActivity.objects.all()
+    serializer_class = UserActivitySerializer

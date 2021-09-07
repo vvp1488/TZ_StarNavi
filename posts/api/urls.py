@@ -5,7 +5,7 @@ from .views import MyTokenObtainPairView
 
 model = ContentType
 
-from .views import PostViewSet, UserViewSet, LikeListAPI
+from .views import PostViewSet, UserViewSet, LikeListAPI, UserActivityList
 
 router = DefaultRouter()
 router.register(r'posts', PostViewSet)
@@ -14,6 +14,7 @@ router.register(r'users', UserViewSet)
 urlpatterns = [
     path('token/', MyTokenObtainPairView.as_view()),
     path('analitics/', LikeListAPI.as_view()),
+    path('user_activity/', UserActivityList.as_view())
 
 
 ]

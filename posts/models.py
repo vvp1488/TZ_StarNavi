@@ -33,7 +33,7 @@ class Like(models.Model):
 class UserActivity(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    user_last_login = models.DateTimeField(blank=True, null=True)
+    user_last_login = models.CharField(max_length=255,blank=True, null=True)
     user_last_request = models.TextField(blank=True, null=True)
 
     def __str__(self):
